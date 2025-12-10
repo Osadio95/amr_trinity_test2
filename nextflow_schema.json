@@ -2,49 +2,22 @@
   "$schema": "http://json-schema.org/draft-07/schema",
   "$id": "https://raw.githubusercontent.com/Osadio95/AMR_trinity_test/master/nextflow_schema.json",
   "title": "AMR-Trinity",
-  "description": "Nextflow workflow for AMR detection using AMRFinderPlus, ResFinder, RGI with harmonization",
+  "description": "Workflow for AMR detection using AMRFinderPlus, ResFinder, RGI with harmonization",
   "type": "object",
-  "parameters": {
+  "properties": {
     "input": {
       "type": "string",
       "format": "file-path",
       "description": "TSV file containing sample IDs, species, and assembly paths",
-      "help_text": "Path to TSV file with columns: id, species, assembly",
-      "default": "test/mini/isolates.tsv"
+      "default": "test/mini/isolates.tsv",
+      "help_text": "Path to TSV file with columns: id, species, assembly"
     },
     "outdir": {
       "type": "string",
       "format": "directory-path",
       "description": "Output directory for results",
-      "help_text": "Directory where all results will be written",
-      "default": "results"
-    },
-    "threads": {
-      "type": "integer",
-      "description": "Number of threads to use for multi-threaded tools",
-      "default": 8
-    }
-  },
-  "processes": {
-    "amrfinderplus": {
-      "description": "Run AMRFinderPlus on input assemblies",
-      "container": "docker.io/ncbi/amr:4.0.23-2025-07-16.1"
-    },
-    "resfinder": {
-      "description": "Run ResFinder on input assemblies",
-      "container": "docker.io/genomicepidemiology/resfinder:4.7.2"
-    },
-    "rgi": {
-      "description": "Run RGI on input assemblies",
-      "container": "quay.io/biocontainers/rgi:6.0.5--pyh05cac1d_0"
-    },
-    "hamronize": {
-      "description": "Harmonizes per-tool per-sample outputs",
-      "container": "ghcr.io/zwets/hamronization:1.1.10"
-    },
-    "summarise": {
-      "description": "Summarizes all tool outputs into final reports",
-      "container": "ghcr.io/zwets/hamronization:1.1.10"
+      "default": "results",
+      "help_text": "Directory where all results will be written"
     }
   },
   "required": ["input"]
