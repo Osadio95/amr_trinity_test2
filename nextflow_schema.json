@@ -13,6 +13,7 @@
                 "input": {
                     "type": "string",
                     "format": "file-path",
+                    "mimetype": "text/csv",
                     "description": "TSV file with columns: id, species, assembly",
                     "help_text": "Path to a TSV file containing sample information"
                 }
