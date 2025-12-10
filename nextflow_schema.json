@@ -1,35 +1,28 @@
-#!/usr/bin/env nextflow
-
-// Workflow minimal pour EPI2ME
-params.samplesheet = params.samplesheet ?: 'isolates.tsv'
-
-workflow {
-    // Lire le samplesheet
-    Channel.fromPath(params.samplesheet)
-        .splitCsv(header: true, sep: '\t')
-        .set { samples_ch }
-    
-    // Exécuter les outils (version simplifiée)
-    samples_ch.map { row ->
-        tuple(row.id, row.species, file(row.assembly))
-    }.set { processed_samples }
-    
-    // Logique de base
-    emit: processed_samples
-}
-
-// Processus minimal pour validation
-process amrfinderplus {
-    container 'docker.io/ncbi/amr:latest'
-    
-    input:
-    tuple val(id), val(species), path(assembly)
-    
-    output:
-    path("${id}_amrfinder.tsv"), emit: results
-    
-    script:
-    """
-    amrfinder -n $assembly --output ${id}_amrfinder.tsv
-    """
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "AMR Detection Workflow",
+  "description": "Detect antimicrobial resistance genes",
+  "type": "object",
+  "definitions": {},
+  "properties": {
+    "samplesheet": {
+      "type": "string",
+      "format": "file",
+      "description": "TSV file with columns: id, species, assembly",
+      "default": ""
+    },
+    "outdir": {
+      "type": "string",
+      "description": "Output directory",
+      "default": "results"
+    },
+    "threads": {
+      "type": "integer",
+      "description": "Number of CPU threads",
+      "default": 4,
+      "minimum": 1,
+      "maximum": 16
+    }
+  },
+  "required": ["samplesheet"]
 }
