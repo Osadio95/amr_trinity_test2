@@ -8,6 +8,8 @@
         "input": {
             "title": "Input Options",
             "type": "object",
+            "fa_icon": "fas fa-terminal",
+            "description": "Define where the pipeline should find input data",
             "required": ["input"],
             "properties": {
                 "input": {
@@ -15,7 +17,9 @@
                     "format": "file-path",
                     "mimetype": "text/csv",
                     "description": "TSV file with columns: id, species, assembly",
-                    "help_text": "Path to a TSV file containing sample information"
+                    "help_text": "Path to a TSV file containing sample information",
+                    "fa_icon": "fas fa-file-csv",
+                    "default": "./samplesheet.tsv"
                 }
             },         
         },
