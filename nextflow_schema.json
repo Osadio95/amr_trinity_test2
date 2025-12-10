@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/Osadio95/AMR_trinity_test/master/nextflow_schema.json",
+    "title": "AMR Trinity Workflow",
+    "description": "Antimicrobial Resistance analysis with AMRFinderPlus, ResFinder and RGI",
+    "type": "object",
+    "definitions": {
+        "input": {
+            "title": "Input Options",
+            "type": "object",
+            "properties": {
+                "input": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "TSV file with columns: id, species, assembly",
+                    "help_text": "Path to a TSV file containing sample information"
+                }
+            },
+            "required": ["input"]
+        },
+        "output": {
+            "title": "Output Options",
+            "type": "object",
+            "properties": {
+                "outdir": {
+                    "type": "string",
+                    "default": "output",
+                    "description": "Directory for output files",
+                    "format": "directory-path"
+                }
+            }
+        }
+    },
+    "allOf": [
+        {"$ref": "#/definitions/input"},
+        {"$ref": "#/definitions/output"}
+    ]
+}
