@@ -1,38 +1,42 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
     "$id": "https://raw.githubusercontent.com/Osadio95/AMR_trinity_test/master/nextflow_schema.json",
-    "title": "AMR Trinity Workflow",
-    "description": "Antimicrobial Resistance analysis with AMRFinderPlus, ResFinder and RGI",
+    "title": "AMR-Trinity",
+    "description": "Workflow for AMR detection using AMRFinderPlus, ResFinder and RGI with harmonization",
     "type": "object",
     "definitions": {
-        "input": {
+        "input_options": {
             "title": "Input Options",
             "type": "object",
+            "fa_icon": "fas fa-terminal",
+            "description": "Define input data for the workflow",
+            "required": ["input"],
             "properties": {
                 "input": {
                     "type": "string",
                     "format": "file-path",
-                    "description": "TSV file with columns: id, species, assembly",
-                    "help_text": "Path to a TSV file containing sample information"
+                    "description": "TSV file containing sample IDs, species, and assembly paths",
+                    "help_text": "Path to TSV file with columns: id, species, assembly"
                 }
-            },
-            "required": ["input"]
+            }
         },
-        "output": {
+        "output_options": {
             "title": "Output Options",
             "type": "object",
+            "fa_icon": "fas fa-folder-open",
+            "description": "Define output directory",
             "properties": {
                 "outdir": {
                     "type": "string",
-                    "default": "output",
-                    "description": "Directory for output files",
-                    "format": "directory-path"
+                    "default": "results",
+                    "format": "directory-path",
+                    "description": "Output directory for results"
                 }
             }
         }
     },
     "allOf": [
-        {"$ref": "#/definitions/input"},
-        {"$ref": "#/definitions/output"}
+        {"$ref": "#/definitions/input_options"},
+        {"$ref": "#/definitions/output_options"}
     ]
 }
