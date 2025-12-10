@@ -2,32 +2,49 @@
   "$schema": "http://json-schema.org/draft-07/schema",
   "$id": "https://raw.githubusercontent.com/Osadio95/AMR_trinity_test/master/nextflow_schema.json",
   "title": "AMR-Trinity",
-  "description": "Workflow for AMR detection using AMRFinderPlus, ResFinder and RGI with harmonization",
+  "description": "Nextflow workflow for AMR detection using AMRFinderPlus, ResFinder, RGI with harmonization",
   "type": "object",
-  "properties": {
+  "parameters": {
     "input": {
-      "title": "Input TSV file",
-      "description": "TSV file containing sample IDs, species, and assembly paths",
       "type": "string",
       "format": "file-path",
-      "default": "test/mini/isolates.tsv",
+      "description": "TSV file containing sample IDs, species, and assembly paths",
       "help_text": "Path to TSV file with columns: id, species, assembly",
-      "fa_icon": "fas fa-file-alt"
+      "default": "test/mini/isolates.tsv"
     },
     "outdir": {
-      "title": "Output directory",
-      "description": "Directory where results will be written",
       "type": "string",
       "format": "directory-path",
-      "default": "results",
-      "fa_icon": "fas fa-folder-open"
+      "description": "Output directory for results",
+      "help_text": "Directory where all results will be written",
+      "default": "results"
     },
     "threads": {
-      "title": "Number of threads",
-      "description": "Number of CPU threads for the workflow",
       "type": "integer",
-      "default": 4,
-      "fa_icon": "fas fa-microchip"
+      "description": "Number of threads to use for multi-threaded tools",
+      "default": 8
+    }
+  },
+  "processes": {
+    "amrfinderplus": {
+      "description": "Run AMRFinderPlus on input assemblies",
+      "container": "docker.io/ncbi/amr:4.0.23-2025-07-16.1"
+    },
+    "resfinder": {
+      "description": "Run ResFinder on input assemblies",
+      "container": "docker.io/genomicepidemiology/resfinder:4.7.2"
+    },
+    "rgi": {
+      "description": "Run RGI on input assemblies",
+      "container": "quay.io/biocontainers/rgi:6.0.5--pyh05cac1d_0"
+    },
+    "hamronize": {
+      "description": "Harmonizes per-tool per-sample outputs",
+      "container": "ghcr.io/zwets/hamronization:1.1.10"
+    },
+    "summarise": {
+      "description": "Summarizes all tool outputs into final reports",
+      "container": "ghcr.io/zwets/hamronization:1.1.10"
     }
   },
   "required": ["input"]
