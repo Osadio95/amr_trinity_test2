@@ -2,234 +2,131 @@
     "$schema": "http://json-schema.org/draft-07/schema",
     "$id": "https://raw.githubusercontent.com/Osadio95/AMR_trinity_test/master/nextflow_schema.json",
     "title": "Osadio95/AMR_trinity_test",
-    "workflow_title": "AMR Trinity",
     "description": "Antimicrobial resistance detection using AMRFinderPlus, ResFinder and RGI with harmonization",
-    "demo_url": "https://ont-exd-int-s3-euwst1-epi2me-labs.s3.amazonaws.com/wf-template/wf-template-demo.tar.gz",
-    "aws_demo_url": "https://ont-exd-int-s3-euwst1-epi2me-labs.s3.amazonaws.com/wf-template/wf-template-demo/aws.nextflow.config",
-    "url": "https://github.com/Osadio95/AMR_trinity_test",
     "type": "object",
     "definitions": {
-        "input": {
-            "title": "Input Options",
+        "input_output_options": {
+            "title": "Input/output options",
             "type": "object",
-            "fa_icon": "fas fa-arrow-right",
-            "description": "Parameters for finding and handling input data for analysis.",
+            "fa_icon": "fas fa-terminal",
+            "description": "Define where the pipeline should find input data and save output data.",
+            "required": ["input"],
             "properties": {
-                "fastq": {
-                    "type": "string",
-                    "format": "path",
-                    "title": "FASTQ",
-                    "description": "FASTQ files containing sequencing reads for AMR analysis.",
-                    "help_text": "This accepts one of four cases: (i) the path to a single FASTQ file; (ii) the path to a folder containing FASTQ files; (iii) the path to a folder containing one level of sub-folders which in turn contain FASTQ files; (iv) the path to a MinKNOW experiment folder containing sub-folders for each sequenced sample."
-                },
-                "assemblies": {
-                    "type": "string",
-                    "format": "path",
-                    "description": "Folder containing assembled genomes (FASTA files) for AMR analysis.",
-                    "help_text": "Path to a folder containing FASTA files with assembled genomes. Each file should be named with the sample ID."
-                },
-                "assemblies_sheet": {
+                "input": {
                     "type": "string",
                     "format": "file-path",
-                    "description": "TSV file mapping sample IDs to assembly paths.",
-                    "help_text": "TSV file with columns: id, species, assembly (path to FASTA file)."
+                    "mimetype": "text/csv",
+                    "pattern": "^\\S+\\.(tsv|csv)$",
+                    "description": "Path to tab-separated file containing information about the samples in the experiment.",
+                    "help_text": "TSV file with 3 columns: id, species, assembly (path to FASTA file)",
+                    "fa_icon": "fas fa-file-csv",
+                    "default": "test/mini/isolates.tsv"
                 },
-                "analyse_unclassified": {
-                    "type": "boolean",
-                    "default": false,
-                    "title": "Analyse unclassified reads",
-                    "description": "Analyse unclassified reads from input folder.",
-                    "hidden": true
-                },
-                "analyse_fail": {
-                    "type": "boolean",
-                    "default": false,
-                    "title": "Analyse reads marked as failed QC",
-                    "description": "Analyse failed reads from input folder.",
-                    "hidden": true
-                }
-            },
-            "oneOf": [
-                {
-                    "required": ["fastq"]
-                },
-                {
-                    "required": ["assemblies"]
-                },
-                {
-                    "required": ["assemblies_sheet"]
-                }
-            ]
-        },
-        "samples": {
-            "title": "Sample Options",
-            "type": "object",
-            "fa_icon": "fas fa-vials",
-            "description": "Parameters that relate to samples such as sample sheets and sample names.",
-            "properties": {
-                "sample_sheet": {
+                "outdir": {
                     "type": "string",
-                    "format": "file-path",
-                    "description": "A CSV file used to map barcodes to sample aliases.",
-                    "help_text": "The sample sheet is a CSV file with columns named `barcode` and `alias`."
-                },
-                "sample": {
-                    "type": "string",
-                    "description": "A single sample name for singleplexed data."
-                }
-            }
-        },
-        "output": {
-            "title": "Output Options",
-            "type": "object",
-            "fa_icon": "fas fa-arrow-left",
-            "description": "Parameters for saving and naming workflow outputs.",
-            "properties": {
-                "out_dir": {
-                    "type": "string",
-                    "default": "results",
                     "format": "directory-path",
-                    "description": "Directory for output of all workflow results."
+                    "description": "The output directory where the results will be saved.",
+                    "fa_icon": "fas fa-folder-open",
+                    "default": "results"
                 }
             }
         },
-        "amr_options": {
+        "amr_analysis_options": {
             "title": "AMR Analysis Options",
             "type": "object",
             "fa_icon": "fas fa-bacteria",
-            "description": "Parameters specific to antimicrobial resistance detection.",
+            "description": "Options for antimicrobial resistance detection.",
             "properties": {
                 "threads": {
                     "type": "integer",
                     "description": "Number of CPU threads to use for analysis.",
                     "default": 4,
                     "minimum": 1,
-                    "maximum": 16
-                },
-                "database_path": {
-                    "type": "string",
-                    "description": "Custom database path for AMR tools.",
-                    "default": ""
-                },
-                "min_coverage": {
-                    "type": "number",
-                    "description": "Minimum coverage for AMR gene detection.",
-                    "default": 80,
-                    "minimum": 0,
-                    "maximum": 100
-                },
-                "min_identity": {
-                    "type": "number",
-                    "description": "Minimum identity percentage for AMR gene detection.",
-                    "default": 90,
-                    "minimum": 0,
-                    "maximum": 100
+                    "maximum": 16,
+                    "fa_icon": "fas fa-microchip"
                 }
             }
         },
-        "advanced_options": {
-            "title": "Advanced Options",
+        "process_skipping_options": {
+            "title": "Process skipping options",
             "type": "object",
-            "fa_icon": "far fa-question-circle",
-            "description": "Advanced options for configuring processes inside the workflow.",
+            "fa_icon": "fas fa-fast-forward",
+            "description": "Options to skip various steps within the workflow.",
             "properties": {
                 "skip_amrfinder": {
                     "type": "boolean",
-                    "default": false,
-                    "description": "Skip AMRFinderPlus analysis."
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip AMRFinderPlus analysis.",
+                    "default": false
                 },
                 "skip_resfinder": {
                     "type": "boolean",
-                    "default": false,
-                    "description": "Skip ResFinder analysis."
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip ResFinder analysis.",
+                    "default": false
                 },
                 "skip_rgi": {
                     "type": "boolean",
-                    "default": false,
-                    "description": "Skip RGI analysis."
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip RGI analysis.",
+                    "default": false
                 }
             }
         },
-        "misc": {
-            "title": "Miscellaneous Options",
+        "generic_options": {
+            "title": "Generic options",
             "type": "object",
-            "description": "Everything else.",
+            "fa_icon": "fas fa-file-import",
+            "description": "Common options for the pipeline.",
             "properties": {
-                "disable_ping": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Enable to prevent sending a workflow ping.",
-                    "hidden": true
-                },
                 "help": {
                     "type": "boolean",
                     "description": "Display help text.",
                     "fa_icon": "fas fa-question-circle",
-                    "default": false,
                     "hidden": true
                 },
                 "version": {
                     "type": "boolean",
                     "description": "Display version and exit.",
                     "fa_icon": "fas fa-question-circle",
-                    "default": false,
                     "hidden": true
+                },
+                "monochrome_logs": {
+                    "type": "boolean",
+                    "description": "Do not use coloured log outputs.",
+                    "fa_icon": "fas fa-palette",
+                    "hidden": true,
+                    "default": false
+                },
+                "validate_params": {
+                    "type": "boolean",
+                    "description": "Boolean whether to validate parameters against the schema at runtime",
+                    "default": true,
+                    "fa_icon": "fas fa-check-square",
+                    "hidden": true
+                },
+                "show_hidden_params": {
+                    "type": "boolean",
+                    "fa_icon": "far fa-eye-slash",
+                    "description": "Show all params when using `--help`",
+                    "hidden": true,
+                    "default": false
                 }
             }
         }
     },
     "allOf": [
         {
-            "$ref": "#/definitions/input"
+            "$ref": "#/definitions/input_output_options"
         },
         {
-            "$ref": "#/definitions/samples"
+            "$ref": "#/definitions/amr_analysis_options"
         },
         {
-            "$ref": "#/definitions/output"
+            "$ref": "#/definitions/process_skipping_options"
         },
         {
-            "$ref": "#/definitions/amr_options"
-        },
-        {
-            "$ref": "#/definitions/advanced_options"
-        },
-        {
-            "$ref": "#/definitions/misc"
+            "$ref": "#/definitions/generic_options"
         }
-    ],
-    "properties": {
-        "aws_image_prefix": {
-            "type": "string",
-            "hidden": true
-        },
-        "aws_queue": {
-            "type": "string",
-            "hidden": true
-        },
-        "monochrome_logs": {
-            "type": "boolean",
-            "default": false
-        },
-        "validate_params": {
-            "type": "boolean",
-            "default": true
-        },
-        "show_hidden_params": {
-            "type": "boolean",
-            "default": false
-        }
-    },
-    "resources": {
-        "recommended": {
-            "cpus": 8,
-            "memory": "16GB"
-        },
-        "minimum": {
-            "cpus": 4,
-            "memory": "8GB"
-        },
-        "run_time": "30 minutes per sample",
-        "arm_support": true
-    }
+    ]
 }
