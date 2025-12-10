@@ -1,68 +1,35 @@
-{
-  "$schema": "http://json-schema.org/draft-07/schema",
-  "$id": "https://raw.githubusercontent.com/Osadio95/AMR_trinity_test/master/nextflow_schema.json",
-  "title": "AMR-Trinity",
-  "description": "Workflow for AMR detection using AMRFinderPlus, ResFinder and RGI with harmonization",
-  "type": "object",
-  "properties": {
-    "input_options": {
-      "type": "object",
-      "title": "Input Options",
-      "description": "Parameters related to input data, e.g., location of assemblies or FASTQ files",
-      "properties": {
-        "input": {
-          "type": "string",
-          "format": "file-path",
-          "description": "TSV file containing sample IDs, species, and assembly paths",
-          "help_text": "Path to TSV file with columns: id, species, assembly",
-          "default": "test/mini/isolates.tsv"
-        }
-      },
-      "required": ["input"]
-    },
-    "sample_options": {
-      "type": "object",
-      "title": "Sample Options",
-      "description": "Parameters related to the samples being analysed",
-      "properties": {
-        "samplesheet": {
-          "type": "string",
-          "format": "file-path",
-          "description": "Optional samplesheet file",
-          "default": ""
-        }
-      }
-    },
-    "output_options": {
-      "type": "object",
-      "title": "Output Options",
-      "description": "Parameters related to the output of the workflow",
-      "properties": {
-        "outdir": {
-          "type": "string",
-          "format": "directory-path",
-          "description": "Output directory for results",
-          "default": "results"
-        }
-      }
-    },
-    "advanced_options": {
-      "type": "object",
-      "title": "Advanced Options",
-      "description": "Options that an everyday user might not need to interact with",
-      "properties": {
-        "threads": {
-          "type": "integer",
-          "description": "Number of threads to use for multi-threaded tools",
-          "default": 8
-        }
-      }
-    },
-    "miscellaneous_options": {
-      "type": "object",
-      "title": "Miscellaneous Options",
-      "description": "All other options",
-      "properties": {}
-    }
-  }
+#!/usr/bin/env nextflow
+
+// Workflow minimal pour EPI2ME
+params.samplesheet = params.samplesheet ?: 'isolates.tsv'
+
+workflow {
+    // Lire le samplesheet
+    Channel.fromPath(params.samplesheet)
+        .splitCsv(header: true, sep: '\t')
+        .set { samples_ch }
+    
+    // Exécuter les outils (version simplifiée)
+    samples_ch.map { row ->
+        tuple(row.id, row.species, file(row.assembly))
+    }.set { processed_samples }
+    
+    // Logique de base
+    emit: processed_samples
+}
+
+// Processus minimal pour validation
+process amrfinderplus {
+    container 'docker.io/ncbi/amr:latest'
+    
+    input:
+    tuple val(id), val(species), path(assembly)
+    
+    output:
+    path("${id}_amrfinder.tsv"), emit: results
+    
+    script:
+    """
+    amrfinder -n $assembly --output ${id}_amrfinder.tsv
+    """
 }
