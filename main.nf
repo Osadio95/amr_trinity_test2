@@ -1,39 +1,23 @@
 #!/usr/bin/env nextflow
 
-// Inclure vos modules EXISTANTS - NE PAS MODIFIER
 include { amrfinderplus } from './modules/amrfinderplus.nf'
 include { resfinder } from './modules/resfinder.nf'
 include { rgi } from './modules/rgi.nf'
 
-// Processus hamronize - MINIMAL
-process hamronize {
-    publishDir "${params.out_dir}/harmonized", mode: 'copy'
-    
-    input:
-    tuple val(id), val(tool), path(metadata), path(results)
-    
-    output:
-    path "${id}-${tool}.tsv"
-    
-    script:
-    """
-    METADATA=\$(cat $metadata)
-    hamronize \$tool "\$METADATA" $results > "${id}-${tool}.tsv"
-    """
-}
-
-// Processus summarise - MINIMAL
+// Final summary of the three tools across all isolates
 process summarise {
-    publishDir "${params.out_dir}/summary", mode: 'copy'
-    
+    publishDir "${params.outdir}", mode: 'copy'
+    container 'ghcr.io/zwets/hamronization:1.1.10'
+    cpus 1
+
     input:
     path inputs
-    
+
     output:
     path('report.tsv')
     path('report.json')
     path('report.html')
-    
+
     script:
     """
     hamronize summarize -t tsv -o report.tsv $inputs
@@ -42,17 +26,36 @@ process summarise {
     """
 }
 
-// Workflow principal - MINIMAL
+// Harmonizes the per tool per sample output
+process hamronize {
+    publishDir "${params.outdir}", mode: 'copy'
+    container 'ghcr.io/zwets/hamronization:1.1.10'
+    cpus 1
+
+    input:
+    tuple val(id), val(tool), path(metadata), path(results)
+
+    output:
+    path "${id}-${tool}.tsv"
+
+    script:
+    """
+    METADATA=\$(cat $metadata)
+    hamronize $tool \$METADATA $results >'${id}-${tool}.tsv'
+    """
+}
+
 workflow {
-    // NOTE IMPORTANTE : Vos modules attendent 'contigs' mais le schema EPI2ME utilise 'assembly'
-    // On adapte le nom ici seulement
-    Channel.fromPath(params.assemblies_sheet)
-        .splitCsv(header: true, sep: '\t')
-        .map { row -> tuple(row.id, row.species, file(row.assembly)) }
+
+    // Parse the sample sheet into a channel of (id, species, assembly) tuples and connect to the tools in parallel
+    Channel.fromPath(params.input).splitCsv(header: true, sep: '\t')  // boycott CSV!
+        | map { row -> tuple(row.id, row.species, file(row.assembly)) }
         | (amrfinderplus & resfinder & rgi)
-    
+
+    // Pull the tool outputs into a single channel, harmonise each, collect all harmoniseds, and summarise overall
     Channel.of().mix(amrfinderplus.out, resfinder.out, rgi.out)
         | hamronize 
-        | collect
+        | collect // into array
         | summarise
+
 }
